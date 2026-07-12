@@ -654,6 +654,46 @@ class ConfigManager:
                     pass
             raise ConfigSaveError(f"Error writing file atomically to '{path}': {e}") from e
 
+    def _apply_single_override(self, env_k: str, env_v: str) -> None:
+        """Applies a single environment variable override to config."""
+        if env_k == "GEMINI_API_KEY":
+            self._config.gemini.api_key = env_v
+            logger.debug("Applied environment override: GEMINI_API_KEY")
+            return
+
+        prefix = "AIMS_"
+        if not env_k.startswith(prefix):
+            return
+
+        parts = env_k[len(prefix):].lower().split("_")
+        if len(parts) < 2:
+            return
+
+        section_name = parts[0]
+        attr_name = "_".join(parts[1:])
+
+        if hasattr(self._config, section_name):
+            section = getattr(self._config, section_name)
+            if hasattr(section, attr_name):
+                curr_val = getattr(section, attr_name)
+                try:
+                    # Attempt to dynamically typecast to original field datatype
+                    if isinstance(curr_val, bool):
+                        typed_val: Any = env_v.lower() in {"true", "1", "yes"}
+                    elif isinstance(curr_val, int):
+                        typed_val = int(env_v)
+                    elif isinstance(curr_val, float):
+                        typed_val = float(env_v)
+                    elif isinstance(curr_val, Enum):
+                        typed_val = type(curr_val)(env_v)
+                    else:
+                        typed_val = str(env_v)
+
+                    setattr(section, attr_name, typed_val)
+                    logger.debug(f"Environment override matched: {env_k} -> {section_name}.{attr_name} = {typed_val}")
+                except ValueError:
+                    logger.warning(f"Failed to cast environment override value for '{env_k}' to type '{type(curr_val).__name__}'")
+
     def _load_dotenv(self) -> None:
         """Parses a local .env file manual parser line-by-line supporting multiple quote styles."""
         if not self._env_file_path.exists():
@@ -692,53 +732,21 @@ class ConfigManager:
                     if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
                         v = v[1:-1]
                     
-                    # Set into active OS environment variables
+                    # Set into active OS environment variables and apply immediately
                     os.environ[k] = v
+                    self._apply_single_override(k, v)
         except Exception as e:
             logger.warning(f"Error reading local environment file '{self._env_file_path}': {e}")
 
     def _apply_env_overrides(self) -> None:
         """Applies configuration parameter overrides from environment variables."""
-        # Specific override mappings
         gemini_api_key = os.environ.get("GEMINI_API_KEY")
         if gemini_api_key:
-            self._config.gemini.api_key = gemini_api_key
-            logger.debug("Applied environment override: GEMINI_API_KEY")
+            self._apply_single_override("GEMINI_API_KEY", gemini_api_key)
 
-        # Programmatic parsing for general AIMS_ prefix variables
-        prefix = "AIMS_"
         for env_k, env_v in os.environ.items():
-            if not env_k.startswith(prefix):
-                continue
-
-            parts = env_k[len(prefix):].lower().split("_")
-            if len(parts) < 2:
-                continue
-
-            section_name = parts[0]
-            attr_name = "_".join(parts[1:])
-
-            if hasattr(self._config, section_name):
-                section = getattr(self._config, section_name)
-                if hasattr(section, attr_name):
-                    curr_val = getattr(section, attr_name)
-                    try:
-                        # Attempt to dynamically typecast to original field datatype
-                        if isinstance(curr_val, bool):
-                            typed_val: Any = env_v.lower() in {"true", "1", "yes"}
-                        elif isinstance(curr_val, int):
-                            typed_val = int(env_v)
-                        elif isinstance(curr_val, float):
-                            typed_val = float(env_v)
-                        elif isinstance(curr_val, Enum):
-                            typed_val = type(curr_val)(env_v)
-                        else:
-                            typed_val = str(env_v)
-
-                        setattr(section, attr_name, typed_val)
-                        logger.debug(f"Environment override matched: {env_k} -> {section_name}.{attr_name} = {typed_val}")
-                    except ValueError:
-                        logger.warning(f"Failed to cast environment override value for '{env_k}' to type '{type(curr_val).__name__}'")
+            if env_k.startswith("AIMS_"):
+                self._apply_single_override(env_k, env_v)
 
     def _rotate_backups(self, dest_dir: Path) -> None:
         """Keeps only the 20 most recent config backups, deleting older ones."""
@@ -771,17 +779,19 @@ class ConfigManager:
         # Extensible migration step
         if loaded_version < "1.0.0":
             raw_data["config_version"] = "1.0.0"
-            if "video" in raw_data:
-                if "allow_custom_resolution" not in raw_data["video"]:
-                    raw_data["video"]["allow_custom_resolution"] = False
-            if "gemini" in raw_data:
-                if "allowed_models" not in raw_data["gemini"]:
-                    raw_data["gemini"]["allowed_models"] = [
-                        "gemini-2.5-flash",
-                        "gemini-2.5-pro",
-                        "gemini-2.5-flash-lite",
-                        "gemini-3.5-flash"
-                    ]
+            if "video" not in raw_data:
+                raw_data["video"] = {}
+            if "allow_custom_resolution" not in raw_data["video"]:
+                raw_data["video"]["allow_custom_resolution"] = False
+            if "gemini" not in raw_data:
+                raw_data["gemini"] = {}
+            if "allowed_models" not in raw_data["gemini"]:
+                raw_data["gemini"]["allowed_models"] = [
+                    "gemini-2.5-flash",
+                    "gemini-2.5-pro",
+                    "gemini-2.5-flash-lite",
+                    "gemini-3.5-flash"
+                ]
                     
         return raw_data
 
