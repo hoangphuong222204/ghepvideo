@@ -10,7 +10,7 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from src.renderer.exceptions import InvalidRenderRequestError, UnsupportedMediaFormatError
+from src.renderer.exceptions import InvalidRenderRequestError, UnsupportedMediaFormatError, InvalidRenderPlanError
 
 
 class RenderTaskStatus(str, Enum):
@@ -734,3 +734,18 @@ class EncoderCapabilityInformation:
     encoder_name: str
     is_hardware_accelerated: bool
     supported_pixel_formats: List[str]
+
+
+@dataclass(frozen=True)
+class RenderValidationReport:
+    """Report detailing the validation outcome of a RenderRequest or RenderResult output.
+
+    Attributes:
+        is_valid: Cumulative correctness status of the validation.
+        errors: List of fatal validation error messages.
+        warnings: List of non-fatal validation warning messages.
+    """
+    is_valid: bool
+    errors: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+

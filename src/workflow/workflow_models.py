@@ -102,6 +102,23 @@ def _ensure_utc(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc)
 
 
+def _make_serializable(obj: Any) -> Any:
+    if isinstance(obj, dict):
+        return {k: _make_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_make_serializable(x) for x in obj]
+    elif isinstance(obj, (set, tuple)):
+        return [_make_serializable(x) for x in obj]
+    elif isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, Path):
+        return str(obj)
+    elif isinstance(obj, Enum):
+        return obj.value
+    return obj
+
+
+
 @dataclass(frozen=True)
 class RetryPolicy:
     """Configurable retry behaviors for recoverable step failures.
@@ -579,15 +596,7 @@ class WorkflowResult:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert results payload into serializable map structure."""
-        data = asdict(self)
-        if data["outputs"]["speech_audio_path"]:
-            data["outputs"]["speech_audio_path"] = str(data["outputs"]["speech_audio_path"])
-        if data["outputs"]["subtitle_path"]:
-            data["outputs"]["subtitle_path"] = str(data["outputs"]["subtitle_path"])
-        if data["outputs"]["final_video_path"]:
-            data["outputs"]["final_video_path"] = str(data["outputs"]["final_video_path"])
-        data["status"] = data["status"].value
-        return data
+        return _make_serializable(asdict(self))
 
 
 @dataclass(frozen=True)
@@ -619,18 +628,8 @@ class BatchWorkflowResult:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert batch result into serializable map structure."""
-        return {
-            "batch_id": self.batch_id,
-            "status": self.status.value,
-            "results": [r.to_dict() for r in self.results],
-            "total_count": self.total_count,
-            "success_count": self.success_count,
-            "failure_count": self.failure_count,
-            "cancelled_count": self.cancelled_count,
-            "awaiting_input_count": self.awaiting_input_count,
-            "total_duration_seconds": self.total_duration_seconds,
-            "warnings": self.warnings,
-        }
+        return _make_serializable(asdict(self))
+
 
 
 @dataclass(frozen=True)

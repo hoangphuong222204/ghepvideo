@@ -163,3 +163,25 @@ class ProjectUpdateError(WorkflowEngineError):
 class BatchWorkflowError(WorkflowEngineError):
     """Raised when executing or orchestrating a batch sequence of workflows fails."""
     pass
+
+
+# Additional Specific Errors
+class StepPreconditionError(StepError):
+    """Raised when a step's preconditions are not met before execution."""
+    pass
+
+
+class WorkflowCancellationError(WorkflowEngineError):
+    """Raised when a workflow execution is cancelled or aborted."""
+    pass
+
+
+class AwaitingInputValidationError(WorkflowEngineError):
+    """Raised when user-provided input for an AWAITING_INPUT step is invalid."""
+    pass
+
+
+class ExecutionOwnershipConflictError(WorkflowEngineError):
+    """Raised when another runner is already executing the same workflow ID."""
+    pass
+

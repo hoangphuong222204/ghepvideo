@@ -1,0 +1,126 @@
+"""Subtitle Engine (Module 09) public interface.
+
+This module provides the stable public API for generating, styling, validating, and
+exporting SRT and ASS subtitle files with optional word-aligned karaoke tagging.
+"""
+
+from src.subtitle.exceptions import (
+    SubtitleEngineError,
+    SubtitleConfigError,
+    SubtitleDependencyError,
+    UnsupportedFormatError,
+    InvalidRequestError,
+    InvalidTextError,
+    InvalidLanguageError,
+    InvalidTimingError,
+    InsufficientTimingError,
+    WordTimingError,
+    SentenceTimingError,
+    SubtitleSegmentationError,
+    LineBreakingError,
+    SubtitleAlignmentError,
+    KaraokeGenerationError,
+    SubtitleValidationError,
+    SubtitleOverlapError,
+    InvalidDurationError,
+    ReadingSpeedViolationError,
+    InvalidCueError,
+    SubtitleStyleError,
+    SubtitleExportError,
+    SubtitleSerializationError,
+    FileOutputError,
+    AtomicWriteError,
+    OutputValidationError,
+    GenerationCancelledError,
+)
+
+from src.subtitle.subtitle_models import (
+    TimingMode,
+    SubtitleFormat,
+    TaskStatus,
+    HealthStatus,
+    AudioChannelMode,
+    WordTiming,
+    SentenceTiming,
+    SubtitleCue,
+    ASSStyle,
+    SubtitleValidationReport,
+    SubtitleRequest,
+    BatchSubtitleRequest,
+    SubtitleGenerationResult,
+    BatchSubtitleGenerationResult,
+    SubtitleExportResult,
+    SubtitleHealthStatus,
+)
+
+from src.subtitle.protocols import (
+    TextSegmenterProtocol,
+    LineBreakerProtocol,
+    TimingAlignerProtocol,
+    KaraokeGeneratorProtocol,
+    ASSStyleManagerProtocol,
+    SubtitleValidatorProtocol,
+    SubtitleExporterProtocol,
+    SubtitleEngineProtocol,
+)
+
+__all__ = [
+    # Exceptions
+    "SubtitleEngineError",
+    "SubtitleConfigError",
+    "SubtitleDependencyError",
+    "UnsupportedFormatError",
+    "InvalidRequestError",
+    "InvalidTextError",
+    "InvalidLanguageError",
+    "InvalidTimingError",
+    "InsufficientTimingError",
+    "WordTimingError",
+    "SentenceTimingError",
+    "SubtitleSegmentationError",
+    "LineBreakingError",
+    "SubtitleAlignmentError",
+    "KaraokeGenerationError",
+    "SubtitleValidationError",
+    "SubtitleOverlapError",
+    "InvalidDurationError",
+    "ReadingSpeedViolationError",
+    "InvalidCueError",
+    "SubtitleStyleError",
+    "SubtitleExportError",
+    "SubtitleSerializationError",
+    "FileOutputError",
+    "AtomicWriteError",
+    "OutputValidationError",
+    "GenerationCancelledError",
+    
+    # Enums
+    "TimingMode",
+    "SubtitleFormat",
+    "TaskStatus",
+    "HealthStatus",
+    "AudioChannelMode",
+    
+    # Models
+    "WordTiming",
+    "SentenceTiming",
+    "SubtitleCue",
+    "ASSStyle",
+    "SubtitleValidationReport",
+    "SubtitleRequest",
+    "BatchSubtitleRequest",
+    "SubtitleGenerationResult",
+    "BatchSubtitleGenerationResult",
+    "SubtitleExportResult",
+    "SubtitleHealthStatus",
+    
+    # Protocols
+    "TextSegmenterProtocol",
+    "LineBreakerProtocol",
+    "TimingAlignerProtocol",
+    "KaraokeGeneratorProtocol",
+    "ASSStyleManagerProtocol",
+    "SubtitleValidatorProtocol",
+    "SubtitleExporterProtocol",
+    "SubtitleEngineProtocol",
+]

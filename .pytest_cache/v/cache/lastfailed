@@ -1,0 +1,5 @@
+{
+  "tests/project_manager/test_foundations.py": true,
+  "tests/renderer/test_foundations.py": true,
+  "tests/workflow/test_foundations.py": true
+}

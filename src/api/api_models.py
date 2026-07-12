@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator, SecretStr
 
 
 # =====================================================================
@@ -538,3 +538,45 @@ class DiagnosticsResponse(BaseModel):
     active_project_id: Optional[str] = Field(None)
     recent_warnings_count: int = Field(0)
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+# =====================================================================
+# CAPABILITY & SECURITY SCHEMAS
+# =====================================================================
+
+class CapabilityResponse(BaseModel):
+    """Response model detailing system and hardware capabilities."""
+    hardware_acceleration_available: bool = Field(..., description="True if GPU acceleration is present.")
+    active_device: str = Field(..., description="The compute device active: cpu, cuda, or mps.")
+    supported_video_codecs: List[str] = Field(default_factory=list, description="Supported rendering video codecs.")
+    supported_audio_formats: List[str] = Field(default_factory=list, description="Supported audio formats.")
+    max_concurrency_limit: int = Field(..., description="Determines parallel batch workflow limit.")
+    features: Dict[str, bool] = Field(default_factory=dict, description="Toggle mapping of active system features.")
+
+
+class SecureServiceCredentials(BaseModel):
+    """Encapsulates sensitive credentials, ensuring safe exclusion on serialization."""
+    service_name: str = Field(..., description="Visual name for the connected downstream service.")
+    api_key_secret: SecretStr = Field(..., description="The highly sensitive token or key.")
+    client_id: str = Field(..., description="Public identifier associated with the credentials.")
+    auth_url: str = Field(..., description="Endpoints utilized to verify authentications.")
+
+
+class SafePathResponse(BaseModel):
+    """Demonstrates safe path serialization for system path interfaces."""
+    workspace_root: Path = Field(..., description="A concrete Path instance pointing to project root.")
+    assets_directory: Path = Field(..., description="Path containing raw media files.")
+    export_target: Optional[Path] = Field(None, description="Optional path targeting compilation releases.")
+
+    @field_validator("workspace_root", "assets_directory", "export_target", mode="before")
+    @classmethod
+    def validate_path_safety(cls, v: Any) -> Any:
+        """Verify that paths do not contain unsafe directory traversal or characters."""
+        if v is None:
+            return None
+        # Convert raw value to string for inspection before path normalization
+        path_str = str(v)
+        if ".." in path_str or "//" in path_str:
+            raise ValueError("Path contains invalid or unsafe sequence characters.")
+        return v
+

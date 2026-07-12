@@ -12,6 +12,13 @@ export interface ProductInfo {
   duration: 15 | 30 | 60;
   priceInfo: string;
   callToAction: string;
+  brand?: string;
+  promotion?: string;
+  desire?: string;
+  platform?: string;
+  advancedPrompt?: string;
+  keywords?: string;
+  forbiddenWords?: string;
 }
 
 export interface VideoScene {
@@ -30,6 +37,7 @@ export interface MarketingScript {
   totalDuration: number;
   ffmpegCommand: string;      // Simple bash snippet
   pythonFFmpegScript: string; // Complete offline Python rendering pipeline
+  validationIssues?: string[]; // Auto-corrected price safety violations list
 }
 
 export interface VoiceSettings {
