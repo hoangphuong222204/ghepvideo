@@ -1,0 +1,6 @@
+{
+  "name": "AI Marketing Studio PRO",
+  "description": "Professional video script generation and FFmpeg composition workspace for TikTok Shop creators.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

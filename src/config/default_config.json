@@ -1,0 +1,57 @@
+{
+  "config_version": "1.0.0",
+  "application": {
+    "version": "1.0.0",
+    "language": "vi",
+    "theme": "Artistic Flair"
+  },
+  "gemini": {
+    "api_key": "MY_GEMINI_API_KEY",
+    "model": "gemini-3.5-flash",
+    "temperature": 0.3,
+    "top_p": 0.95,
+    "max_tokens": 4096,
+    "allowed_models": [
+      "gemini-2.5-flash",
+      "gemini-2.5-pro",
+      "gemini-2.5-flash-lite",
+      "gemini-3.5-flash"
+    ]
+  },
+  "fish_speech": {
+    "model_path": "models/fish_speech_v1",
+    "device": "cuda",
+    "sample_rate": 44100,
+    "output_folder": "exports/audio"
+  },
+  "ffmpeg": {
+    "executable": "bin/ffmpeg.exe",
+    "threads": 4,
+    "preset": "medium"
+  },
+  "video": {
+    "resolution": "1080x1920",
+    "fps": 30,
+    "codec": "libx264",
+    "crf": 23,
+    "allow_custom_resolution": false
+  },
+  "audio": {
+    "music_folder": "assets/audio_templates",
+    "voice_folder": "exports/voice",
+    "volume": 0.8
+  },
+  "database": {
+    "sqlite_path": "database.db",
+    "backup_folder": "backups"
+  },
+  "assets": {
+    "input": "assets/input",
+    "output": "exports",
+    "temp": "temp",
+    "logs": "logs",
+    "cache": "cache",
+    "resources": "resources",
+    "plugins": "plugins"
+  }
+}
